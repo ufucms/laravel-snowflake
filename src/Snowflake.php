@@ -2,6 +2,7 @@
 
 namespace Ufucms\LaravelSnowflake;
 
+use Illuminate\Support\Facades\Config;
 use Ufucms\LaravelSnowflake\Server\CountServerInterFace;
 use Ufucms\LaravelSnowflake\Server\FileCountServer;
 use Ufucms\LaravelSnowflake\Server\RedisCountServer;
@@ -12,7 +13,7 @@ use Ufucms\LaravelSnowflake\Server\RedisCountServer;
  */
 class Snowflake
 {
-    const EPOCH_OFFSET        = 1532188800000;
+    const EPOCH_OFFSET        = 1564416000000;
     const TIMESTAMP_BITS      = 36;
     const DATA_CENTER_BITS    = 5;
     const MACHINE_ID_BITS     = 5;
@@ -65,8 +66,9 @@ class Snowflake
     protected $maxDataCenterId     = -1 ^ (-1 << self::DATA_CENTER_BITS);
 
     //初始化
-    public function __construct(array $config = [])
+    public function __construct()
     {
+        $config = Config::get('snowflake', array());
         $this->config = array_merge($this->config, $config);
         $this->dataCenterId = $this->config['dataCenter_id'];
         if ($this->dataCenterId > $this->maxDataCenterId) {
