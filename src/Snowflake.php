@@ -14,10 +14,10 @@ use Ufucms\LaravelSnowflake\Server\RedisCountServer;
 class Snowflake
 {
     const EPOCH_OFFSET        = 1564416000000;
-    const TIMESTAMP_BITS      = 36;
+    const TIMESTAMP_BITS      = 41;
     const DATA_CENTER_BITS    = 5;
     const MACHINE_ID_BITS     = 5;
-    const SEQUENCE_BITS       = 7;
+    const SEQUENCE_BITS       = 6;
 
     protected $config = array(
         /**
