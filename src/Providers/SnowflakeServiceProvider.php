@@ -2,7 +2,6 @@
 
 namespace Ufucms\LaravelSnowflake\Providers;
 
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 class SnowflakeServiceProvider extends ServiceProvider
@@ -16,7 +15,7 @@ class SnowflakeServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('snowflake', function ($app) {
-            $config = Config::get('snowflake', array());
+            $config = config('snowflake.config', array());
             return new Snowflake($config);
         });
     }
@@ -29,7 +28,8 @@ class SnowflakeServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/config.php' => config_path('snowflake.php'),
+            __DIR__.'/config.php' => config_path('snowflake/config.php'),
+            __DIR__.'/sequenceId.lock' => config_path('snowflake/sequenceId.lock'),
         ], 'config');
     }
 

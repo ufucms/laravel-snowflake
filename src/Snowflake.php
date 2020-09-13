@@ -2,7 +2,6 @@
 
 namespace Ufucms\LaravelSnowflake;
 
-use Illuminate\Support\Facades\Config;
 use Ufucms\LaravelSnowflake\Server\CountServerInterFace;
 use Ufucms\LaravelSnowflake\Server\FileCountServer;
 use Ufucms\LaravelSnowflake\Server\RedisCountServer;
@@ -13,13 +12,17 @@ use Ufucms\LaravelSnowflake\Server\RedisCountServer;
  */
 class Snowflake
 {
-    const EPOCH_OFFSET        = 1595037600000; //2020-07-18 10:00:00
     const TIMESTAMP_BITS      = 41;
     const DATA_CENTER_BITS    = 5;
     const MACHINE_ID_BITS     = 5;
     const SEQUENCE_BITS       = 12;
 
     protected $config = array(
+        /**
+         * 初始时间戳
+         * @var number
+         */
+        'start_time' => 0,
         /**
          * 数据中心ID 【0~31】
          * @var number
@@ -50,6 +53,7 @@ class Snowflake
         )
     );
 
+    private static $startTime;
     private static $idWorker;
     protected $dataCenterId;
     protected $machineId;
@@ -68,8 +72,9 @@ class Snowflake
     //初始化
     public function __construct()
     {
-        $config = Config::get('snowflake', array());
+        $config = config('snowflake.config', array());
         $this->config = array_merge($this->config, $config);
+        self::$startTime = $this->config['start_time'];
         $this->dataCenterId = $this->config['dataCenter_id'];
         if ($this->dataCenterId > $this->maxDataCenterId) {
             throw new \Exception('data center id should between 0 and ' . $this->maxDataCenterId);
@@ -106,7 +111,7 @@ class Snowflake
             $sequence = $this->countService->getSequenceId($countServiceKey);
         }
         $this->lastTimestamp = $timestamp;
-        $time = (int)($timestamp - self::EPOCH_OFFSET);
+        $time = (int)($timestamp - self::$startTime);
         $id = ($sign << $this->signLeftShift) | ($time << $this->timestampLeftShift) | ($this->dataCenterId << $this->dataCenterLeftShift) | ($this->machineId << $this->machineLeftShift) | $sequence;
         return (string)$id;
     }
@@ -126,7 +131,7 @@ class Snowflake
         $dataCenterId      = substr($binUuid, $dataCenterIdStart, self::DATA_CENTER_BITS);
 
         $timestamp     = substr($binUuid, 0, $dataCenterIdStart);
-        $realTimestamp = bindec($timestamp) + self::EPOCH_OFFSET;
+        $realTimestamp = bindec($timestamp) + self::$startTime;
         $timestamp     = substr($realTimestamp, 0, -3);
         $microSecond   = substr($realTimestamp, -3);
         return [

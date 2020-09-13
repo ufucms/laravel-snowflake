@@ -13,7 +13,7 @@ class FileCountServer implements CountServerInterFace
         $keyFields      = explode('-', $key);
         $timestamp      = (int)end($keyFields);
 
-        $lockFileName   = __DIR__ . DIRECTORY_SEPARATOR . 'sequenceId.lock';
+        $lockFileName   = config_path('snowflake/sequenceId.lock');
 
         if (file_exists($lockFileName)) {
             $fp = fopen($lockFileName, 'r');

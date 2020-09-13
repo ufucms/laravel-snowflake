@@ -2,6 +2,11 @@
 
 return array(
 	/**
+	 * 初始时间戳
+	 * @var number
+	 */
+	'start_time' => strtotime(env("SNOWFLAKE_START_TIME", '2020-07-18 10:00:00'))*1000,
+	/**
 	 * 数据中心ID 【0~31】
 	 * @var number
 	 */
