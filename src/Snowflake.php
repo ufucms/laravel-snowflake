@@ -63,13 +63,46 @@ class Snowflake
     public function __construct(int $timestamp = null, int $workerId = 1, int $datacenterId = 1)
     {
         if ($timestamp === null) {
-            $timestamp = strtotime(self::DEFAULT_EPOCH_DATETIME);
+            $timestamp = strtotime(config('snowflake.epoch', '') ?: self::DEFAULT_EPOCH_DATETIME);
         }
 
         $this->epoch = $timestamp;
         $this->workerId = $workerId;
         $this->datacenterId = $datacenterId;
         $this->lastTimestamp = $this->epoch;
+    }
+
+    /**
+     * 
+     * 创建实例化
+     *
+     * @return int
+     */
+    public static function make()
+    {
+        return (new static);
+    }
+
+    /**
+     * 创建无符号bigint 64bit 唯一Id 大约可用69年.
+     * timestamp_bits(41) + datacenter_id_bits(5) + worker_id_bits(5) + sequence_bits(12)
+     *
+     * @return int
+     */
+    public static function nextId(): int
+    {
+        return self::make()->id();
+    }
+
+    /**
+     * 创建兼容JS 53bit 唯一Id 大约可用68年.
+     * timestamp_bits(31) + datacenter_id_bits(5) + worker_id_bits(5) + sequence_bits(12)
+     *
+     * @return int
+     */
+    public static function shortId(): int
+    {
+        return self::make()->short();
     }
 
     public function makeSequenceId(int $currentTime, int $max = self::MAX_SEQUENCE): int
@@ -100,17 +133,6 @@ class Snowflake
 
         $this->lastTimestamp = $currentTime;
         return $this->toSnowflakeId($currentTime - $this->epoch * 1000, $sequenceId);
-    }
-
-    /**
-     * 创建无符号bigint 64bit 唯一Id 大约可用69年.
-     * timestamp_bits(41) + datacenter_id_bits(5) + worker_id_bits(5) + sequence_bits(12)
-     *
-     * @return int
-     */
-    public static function nextId(): int
-    {
-        return (new static)->id();
     }
 
     /**
@@ -155,6 +177,11 @@ class Snowflake
         }else{
             return (int) time();
         }
+    }
+
+    public function shortParse(int $id): array
+    {
+        return $this->parse($id, true);
     }
 
     public function parse(int $id, bool $is_short=false): array
